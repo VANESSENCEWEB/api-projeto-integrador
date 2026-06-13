@@ -3,11 +3,12 @@
   "version": "1.0.0",
   "description": "API REST para gerenciar Projeto Integrador - Disciplina de Engenharia de Software",
   "main": "server.js",
-  "scripts": {
+"scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "test": "newman run tests/collection.postman_collection.json -e tests/environment.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export ./reports/relatorio.html --reporter-htmlextra-title \"Relatório de Testes - API Projeto Integrador\""
-  },
+    "test": "newman run tests/collection.postman_collection.json -e tests/environment-local.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export ./reports/relatorio-local.html --reporter-htmlextra-title \"Relatório de Testes - Local\"",
+    "test:prod": "newman run tests/collection.postman_collection.json -e tests/environment-producao.postman_environment.json -r cli,htmlextra --reporter-htmlextra-export ./reports/relatorio-producao.html --reporter-htmlextra-title \"Relatório de Testes - Produção\""
+  },  
   "author": "Vanessa Lima",
   "license": "MIT",
   "engines": {

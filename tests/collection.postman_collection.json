@@ -1,0 +1,420 @@
+{
+  "info": {
+    "name": "API Projeto Integrador",
+    "description": "Collection de testes automatizados da API REST do Projeto Integrador - Engenharia de Software",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "a1b2c3d4-1234-5678-9abc-def012345678"
+  },
+  "item": [
+    {
+      "name": "00 - Health Check",
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": { "raw": "{{baseUrl}}/", "host": ["{{baseUrl}}"], "path": [""] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200 - API online', () => pm.response.to.have.status(200));",
+            "pm.test('Retorna info da API', () => {",
+            "  const json = pm.response.json();",
+            "  pm.expect(json).to.have.property('api');",
+            "  pm.expect(json).to.have.property('status', 'online');",
+            "});"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "01 - Usuários - Criar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Vanessa Lima\",\n  \"email\": \"vanessa_{{$timestamp}}@unicap.br\",\n  \"senha\": \"senha123\",\n  \"tipo\": \"aluno\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 201 - Criado', () => pm.response.to.have.status(201));",
+            "pm.test('Tem id retornado', () => pm.expect(pm.response.json()).to.have.property('id'));",
+            "pm.test('Não retorna senha', () => pm.expect(pm.response.json()).to.not.have.property('senha'));",
+            "pm.collectionVariables.set('usuarioId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "02 - Usuários - Listar",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Retorna array', () => pm.expect(pm.response.json()).to.be.an('array'));",
+            "pm.test('Pelo menos 1 usuário', () => pm.expect(pm.response.json().length).to.be.at.least(1));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "03 - Usuários - Buscar por ID",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Id corresponde', () => {",
+            "  const id = parseInt(pm.collectionVariables.get('usuarioId'));",
+            "  pm.expect(pm.response.json().id).to.eql(id);",
+            "});"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "04 - Usuários - Atualizar",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"nome\": \"Vanessa Lima Atualizada\",\n  \"tipo\": \"coordenador\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Nome atualizado', () => pm.expect(pm.response.json().nome).to.eql('Vanessa Lima Atualizada'));",
+            "pm.test('Tipo atualizado', () => pm.expect(pm.response.json().tipo).to.eql('coordenador'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "05 - Usuários - Validação (sem campos)",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"nome\": \"Sem campos\"\n}" },
+        "url": { "raw": "{{baseUrl}}/usuarios", "host": ["{{baseUrl}}"], "path": ["usuarios"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 400 - Bad Request', () => pm.response.to.have.status(400));",
+            "pm.test('Retorna erro', () => pm.expect(pm.response.json()).to.have.property('erro'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "06 - Projetos - Criar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"titulo\": \"Sistema de Gestão Acadêmica\",\n  \"descricao\": \"Projeto Integrador do 5º período\",\n  \"status\": \"em_andamento\",\n  \"usuario_id\": {{usuarioId}}\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/projetos", "host": ["{{baseUrl}}"], "path": ["projetos"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Título correto', () => pm.expect(pm.response.json().titulo).to.eql('Sistema de Gestão Acadêmica'));",
+            "pm.collectionVariables.set('projetoId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "07 - Projetos - Listar",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/projetos", "host": ["{{baseUrl}}"], "path": ["projetos"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "08 - Projetos - Buscar por ID",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/projetos/{{projetoId}}", "host": ["{{baseUrl}}"], "path": ["projetos", "{{projetoId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Tem responsável', () => pm.expect(pm.response.json()).to.have.property('responsavel'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "09 - Etapas - Criar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projeto_id\": {{projetoId}},\n  \"titulo\": \"Levantamento de Requisitos\",\n  \"ordem\": 1,\n  \"status\": \"em_andamento\",\n  \"prazo\": \"2026-07-15\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/etapas", "host": ["{{baseUrl}}"], "path": ["etapas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.collectionVariables.set('etapaId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "10 - Etapas - Listar",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/etapas", "host": ["{{baseUrl}}"], "path": ["etapas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "11 - Tarefas - Criar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"etapa_id\": {{etapaId}},\n  \"titulo\": \"Entrevistar stakeholders\",\n  \"descricao\": \"Coletar requisitos dos usuários finais\",\n  \"status\": \"pendente\",\n  \"responsavel_id\": {{usuarioId}}\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/tarefas", "host": ["{{baseUrl}}"], "path": ["tarefas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.test('Status pendente', () => pm.expect(pm.response.json().status).to.eql('pendente'));",
+            "pm.collectionVariables.set('tarefaId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "12 - Tarefas - Atualizar status",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"concluida\"\n}" },
+        "url": { "raw": "{{baseUrl}}/tarefas/{{tarefaId}}", "host": ["{{baseUrl}}"], "path": ["tarefas", "{{tarefaId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Status alterado', () => pm.expect(pm.response.json().status).to.eql('concluida'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "13 - Entregas - Criar",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"projeto_id\": {{projetoId}},\n  \"titulo\": \"Documento de Requisitos\",\n  \"descricao\": \"Versão final dos requisitos funcionais e não-funcionais\",\n  \"arquivo_url\": \"https://drive.google.com/file/exemplo\",\n  \"data_entrega\": \"2026-07-20\",\n  \"status\": \"pendente\"\n}"
+        },
+        "url": { "raw": "{{baseUrl}}/entregas", "host": ["{{baseUrl}}"], "path": ["entregas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 201', () => pm.response.to.have.status(201));",
+            "pm.collectionVariables.set('entregaId', pm.response.json().id);"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "14 - Entregas - Avaliar (adicionar nota)",
+      "request": {
+        "method": "PUT",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "body": { "mode": "raw", "raw": "{\n  \"status\": \"avaliada\",\n  \"nota\": 9.5\n}" },
+        "url": { "raw": "{{baseUrl}}/entregas/{{entregaId}}", "host": ["{{baseUrl}}"], "path": ["entregas", "{{entregaId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('Nota registrada', () => pm.expect(pm.response.json().nota).to.eql(9.5));",
+            "pm.test('Status = avaliada', () => pm.expect(pm.response.json().status).to.eql('avaliada'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "15 - Entregas - Listar",
+      "request": {
+        "method": "GET",
+        "url": { "raw": "{{baseUrl}}/entregas", "host": ["{{baseUrl}}"], "path": ["entregas"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 200', () => pm.response.to.have.status(200));",
+            "pm.test('É array', () => pm.expect(pm.response.json()).to.be.an('array'));"
+          ]
+        }
+      }]
+    },
+    {
+      "name": "16 - Cleanup - Deletar entrega",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/entregas/{{entregaId}}", "host": ["{{baseUrl}}"], "path": ["entregas", "{{entregaId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Status 204 - Deletado', () => pm.response.to.have.status(204));"]
+        }
+      }]
+    },
+    {
+      "name": "17 - Cleanup - Deletar tarefa",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/tarefas/{{tarefaId}}", "host": ["{{baseUrl}}"], "path": ["tarefas", "{{tarefaId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Status 204', () => pm.response.to.have.status(204));"]
+        }
+      }]
+    },
+    {
+      "name": "18 - Cleanup - Deletar etapa",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/etapas/{{etapaId}}", "host": ["{{baseUrl}}"], "path": ["etapas", "{{etapaId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Status 204', () => pm.response.to.have.status(204));"]
+        }
+      }]
+    },
+    {
+      "name": "19 - Cleanup - Deletar projeto",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/projetos/{{projetoId}}", "host": ["{{baseUrl}}"], "path": ["projetos", "{{projetoId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": ["pm.test('Status 204', () => pm.response.to.have.status(204));"]
+        }
+      }]
+    },
+    {
+      "name": "20 - Cleanup - Deletar usuário",
+      "request": {
+        "method": "DELETE",
+        "url": { "raw": "{{baseUrl}}/usuarios/{{usuarioId}}", "host": ["{{baseUrl}}"], "path": ["usuarios", "{{usuarioId}}"] }
+      },
+      "event": [{
+        "listen": "test",
+        "script": {
+          "type": "text/javascript",
+          "exec": [
+            "pm.test('Status 204', () => pm.response.to.have.status(204));",
+            "pm.test('Verificar que foi deletado', () => {",
+            "  pm.sendRequest({",
+            "    url: pm.variables.get('baseUrl') + '/usuarios/' + pm.collectionVariables.get('usuarioId'),",
+            "    method: 'GET'",
+            "  }, (err, res) => {",
+            "    pm.expect(res.code).to.eql(404);",
+            "  });",
+            "});"
+          ]
+        }
+      }]
+    }
+  ],
+  "variable": [
+    { "key": "usuarioId", "value": "" },
+    { "key": "projetoId", "value": "" },
+    { "key": "etapaId", "value": "" },
+    { "key": "tarefaId", "value": "" },
+    { "key": "entregaId", "value": "" }
+  ]
+}

@@ -1,0 +1,14 @@
+{
+  "usuarios": [],
+  "projetos": [],
+  "etapas": [],
+  "tarefas": [],
+  "entregas": [],
+  "_seq": {
+    "usuarios": 1,
+    "projetos": 1,
+    "etapas": 1,
+    "tarefas": 1,
+    "entregas": 1
+  }
+}
